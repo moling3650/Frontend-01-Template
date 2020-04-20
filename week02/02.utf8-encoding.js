@@ -3,14 +3,7 @@
  * @return ArrayBuffer
  */
 function utf8Encoding(str) {
-  const buffer = new ArrayBuffer(str.length);
-  const view = new DataView(buffer);
-  for (let i = 0; i < str.length; i += 1) {
-    const charCode = str[i].charCodeAt();
-    view.setUint8(i, charCode);
-  }
-  return buffer;
+  return str.split('').map((s) => `\\u${s.charCodeAt().toString(16)}`).join('');
 }
 
-const view = new DataView(utf8Encoding('ab'));
-console.log(view.buffer);
+console.log(utf8Encoding('极客大学')); //\u6781\u5ba2\u5927\u5b66
