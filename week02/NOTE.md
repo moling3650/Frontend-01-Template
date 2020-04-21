@@ -54,7 +54,9 @@
     - 浮点数比较: Math.abs(0.1 + 0.2 - 0.3) < Number.EPSILON
   - String
     - 支持码点: U+0000 ~ U+10FFFF， 但推荐只使用 U+0000 ~ U+FFFF （BMP）
-    - 存储方式: UTF8/UTF16
+      - UCS-2 用 2 个字节表示 BMP 的码点
+      - UCS-4 用 4 个字节表示码点`'\u{10000}'.length // 2`
+    - 存储方式: [UTF8](https://tools.ietf.org/html/rfc3629)/UTF16
   - Boolean
   - Null
   - Undifined
