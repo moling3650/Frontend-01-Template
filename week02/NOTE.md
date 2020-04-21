@@ -56,6 +56,9 @@
     - 支持码点: U+0000 ~ U+10FFFF， 但推荐只使用 U+0000 ~ U+FFFF （BMP）
       - UCS-2 用 2 个字节表示 BMP 的码点
       - UCS-4 用 4 个字节表示码点`'\u{10000}'.length // 2`
+        - 坑 1：length 属性和split 方法。解决：`Array.from(strings)`
+        - 坑 2：码点与字符互转。解决：使用CodePoint的Api
+        - 坑 3：正则匹配。解决：`/./u`
     - 存储方式: [UTF8](https://tools.ietf.org/html/rfc3629)/UTF16
   - Boolean
   - Null
