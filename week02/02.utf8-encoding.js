@@ -16,7 +16,7 @@ function charToUtf8(char) {
       sequence.unshift(`10${sub}`);
     } else {
       const header = headers[sequence.length];
-      sequence.unshift(`${header}${sub.padStart(8 - sub.length - header.length, '0')}`);
+      sequence.unshift(`${header}${sub.padStart(8 - header.length, '0')}`);
     }
   }
   return sequence.join('|');
