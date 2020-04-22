@@ -3,23 +3,14 @@
  * @return {string}
  */
 function charToUtf8(char) {
-  const binary = char.codePointAt().toString(2);
+  let binary = char.codePointAt().toString(2);
   if (binary.length < 8) {
     return binary.padStart(8, '0');
   }
-  const headers = ['0', '110', '1110', '11110'];
-  const sequence = [];
-  for (let end = binary.length; end > 0; end -= 6) {
-    const sub = binary.slice(Math.max(end - 6, 0), end);
-
-    if (sub.length === 6) {
-      sequence.unshift(`10${sub}`);
-    } else {
-      const header = headers[sequence.length];
-      sequence.unshift(`${header}${sub.padStart(8 - header.length, '0')}`);
-    }
-  }
-  return sequence.join('|');
+  binary = binary.replace(/(?=(\B)([01]{6})+$)/g, '10');
+  const chunkCount = Math.ceil(binary.length / 8);
+  binary = `${'1'.repeat(chunkCount)}${binary.padStart(7 * chunkCount, '0')}`;
+  return binary.replace(/(?=(\B)([01]{8})+$)/g, '|');
 }
 
 /**
