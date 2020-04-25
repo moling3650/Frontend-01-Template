@@ -3,14 +3,14 @@
  * @return {string}
  */
 function charToUtf8(char) {
-  let binary = char.codePointAt().toString(2);
-  if (binary.length < 8) {
-    return binary.padStart(8, '0');
+  let bits = char.codePointAt().toString(2);
+  if (bits.length < 8) {
+    return bits.padStart(8, '0');
   }
-  binary = binary.replace(/(?=(\B)([01]{6})+$)/g, '10');
-  const chunkCount = Math.ceil(binary.length / 8);
-  binary = `${'1'.repeat(chunkCount)}${binary.padStart(7 * chunkCount, '0')}`;
-  return binary.replace(/(?=(\B)([01]{8})+$)/g, '|');
+  const byteCount = Math.ceil((bits.length - 1) / 5);
+  bits = bits.replace(/(?=(\B)([01]{6})+$)/g, '10');
+  bits = `${'1'.repeat(byteCount)}${bits.padStart(7 * byteCount, '0')}`;
+  return bits.replace(/(?=(\B)([01]{8})+$)/g, '|');
 }
 
 /**
