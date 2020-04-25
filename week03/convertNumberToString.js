@@ -23,6 +23,7 @@ function convertNumberToString(number, x = 10) {
   return string;
 }
 
-console.log(convertNumberToString(123.456, 10)); // 123.456000000000
-console.log(convertNumberToString(10.25, 8)); // 12.2
-console.log(convertNumberToString(16.5, 16)); // 10.8
+console.log(convertNumberToString(0, 10));  // "0"
+console.log(convertNumberToString(123.456, 10)); // "123.45600000000000306954"
+console.log(convertNumberToString(10.25, 8)); // "12.2"
+console.log(convertNumberToString(16.5, 16)); // "10.8"
