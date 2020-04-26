@@ -8,7 +8,7 @@ function charToUtf8(char) {
     return bits.padStart(8, '0');
   }
   const byteCount = Math.ceil((bits.length - 1) / 5);
-  bits = bits.replace(/(?=(^|[01])([01]{6})+$)/g, '10');
+  bits = bits.replace(/(?=([01]{6})+$)/g, '10');
   bits = `${'1'.repeat(byteCount)}${bits.padStart(7 * byteCount, '0')}`;
   return bits.replace(/(?=(\B)([01]{8})+$)/g, '|');
 }
