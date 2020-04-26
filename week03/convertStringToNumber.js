@@ -16,8 +16,7 @@ function convertStringToNumber(chars, x = 10) {
   }
 
   let decimal = 0;
-  let j = chars.length - 1;
-  for (; i < j; j--) {
+  for (let j = chars.length - 1; i < j; j--) {
     decimal += chars[j].codePointAt(0) - zeroCodePoint;
     decimal /= x;
   }
