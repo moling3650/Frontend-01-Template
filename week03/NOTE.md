@@ -69,3 +69,99 @@
   - methods
     - \[[SetPrototypeOf]] ( V )
     - SetImmutablePrototype ( O, V )
+    
+### The Global Object
+- Value Properties
+  - Infinity
+  - NaN
+  - undefined
+- Function Properties
+  - eval ( x )
+  - isFinite ( number )
+  - isNaN ( number )
+  - parseFloat ( string )
+  - parseInt ( string, radix )
+  - decodeURI ( encodedURI )
+  - decodeURIComponent ( encodedURIComponent )
+  - encodeURI ( uri )
+  - encodeURIComponent ( uriComponent )
+- Constructor Properties
+- Other Properties
+  - Atomics
+  - JSON
+  - Math
+  - Reflect
+
+### Fundamental Objects
+- Object
+- Function
+- Boolean
+- Symbol
+  - Symbol.asyncIterator
+  - Symbol.hasInstance
+  - Symbol.isConcatSpreadable
+  - Symbol.iterator
+  - Symbol.match
+  - Symbol.replace
+  - Symbol.search
+  - Symbol.species
+  - Symbol.split
+  - Symbol.toPrimitive
+  - Symbol.toStringTag
+  - Symbol.unscopables
+- Error
+  - EvalError
+  - RangeError
+  - ReferenceError
+  - SyntaxError
+  - TypeError
+  - URIError
+
+### Numbers and Dates
+- Number
+- Math
+- Date
+
+### Text Processing
+- String
+- RegExp
+
+### Indexed Collections
+- Array
+- TypedArray
+  - Int8Array(char)
+  - Uint8Array(unsigned char)
+  - Uint8ClampedArray(unsigned char)
+  - Int16Array(short)
+  - Uint16Array(unsigned short)
+  - Int32Array(int)
+  - Uint32Array(unsigned int)
+  - Float32Array(float)
+  - Float64Array(double)
+
+### Keyed Collections
+- Map
+- Set
+- WeakMap
+- WeakSet
+
+### Structured Data
+- ArrayBuffer
+- SharedArrayBuffer
+- DataView
+- Atomics
+- JSON
+
+### Control Abstraction Objects
+- Iteration
+- GeneratorFunction Objects
+- AsyncGeneratorFunction Objects
+- Generator Objects
+- AsyncGenerator Objects
+- Promise Objects
+- AsyncFunction Objects
+
+### Reflection
+- The Reflect Object
+- Proxy Objects
+- Module Namespace Objects
