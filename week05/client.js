@@ -170,14 +170,14 @@ class ChunkedBodyParser {
       if (char === '0') { // Length的第一个字符是'0'的话就是终止块
         this.current = this.BODY_BLOCK_END;
       } else {
-        this.chunkLength += (char - '0');
+        this.chunkLength += Number(`0x${char}`); // chunk-length在包体是16进制
         this.current = this.READING_LENGTH;
       }
     } else if (this.current === this.READING_LENGTH) {
       if (char === '\r') {
         this.current = this.READING_LENGTH_END;
       } else {
-        this.chunkLength = this.chunkLength * 10 + (char - '0');
+        this.chunkLength = this.chunkLength * 16 + Number(`0x${char}`);
       }
     } else if (this.current === this.READING_LENGTH_END) {
       this.current = this.READING_CHUNK;
