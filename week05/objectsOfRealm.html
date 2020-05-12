@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Objects of Realm</title>
+  <style>
+    html,
+    body,
+    #container {
+      height: 100%;
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="container"></div>
+  <script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.4.9/dist/g6.min.js"></script>
+  <script>
+    function ownPropertyNamesFor(target) {
+      if (target === window) {
+        return [
+          // Function Properties
+          'eval',
+          'isFinite',
+          'isNaN',
+          'parseFloat',
+          'parseInt',
+          'decodeURI',
+          'decodeURIComponent',
+          'encodeURI',
+          'encodeURIComponent',
+          // Constructor Properties
+          'Array',
+          'ArrayBuffer',
+          'Boolean',
+          'DataView',
+          'Date',
+          'Error',
+          'EvalError',
+          'Float32Array',
+          'Float64Array',
+          'Function',
+          'Int8Array',
+          'Int16Array',
+          'Int32Array',
+          'Map',
+          'Number',
+          'Object',
+          'Promise',
+          'Proxy',
+          'RangeError',
+          'ReferenceError',
+          'RegExp',
+          'Set',
+          'SharedArrayBuffer',
+          'String',
+          'Symbol',
+          'SyntaxError',
+          'TypeError',
+          'Uint8Array',
+          'Uint16Array',
+          'Uint32Array',
+          'URIError',
+          'WeakMap',
+          'WeakSet',
+          // Other Properties
+          'Atomics',
+          'JSON',
+          'Math',
+          'Reflect',
+        ];
+      }
+      return Object.getOwnPropertyNames(target);
+    }
+
+    function ownPropertyFor(target, propName) {
+      return Object.getOwnPropertyDescriptor(target, propName).value;
+    }
+
+    function isObject(any) {
+      return (any !== null) && (typeof any === 'function' || typeof any === 'object');
+    }
+
+    function getObjectProperties(target, prefix = 'global', visited = new Set()) {
+      if (visited.has(target) || !isObject(target)) {
+        return null;
+      }
+
+      visited.add(target);
+      const objectPropNames = ownPropertyNamesFor(target).filter(name => isObject(ownPropertyFor(target, name)));
+      return objectPropNames.map((name) => {
+        const item = {
+          id: `${prefix}.${name}`,
+          name,
+        };
+
+        const children = getObjectProperties(ownPropertyFor(target, name), item.id, visited);
+        if (children && children.length) {
+          item.children = children;
+        }
+
+        return item;
+      });
+    }
+  </script>
+  <script>
+    const width = document.getElementById('container').scrollWidth;
+    const height = document.getElementById('container').scrollHeight;
+    const data = {
+      id: 'global',
+      name: 'global',
+      children: getObjectProperties(window)
+    };    
+    
+  const graph = new G6.TreeGraph({
+    container: 'container',
+    width,
+    height,
+    modes: {
+      default: [
+        {
+          type: 'collapse-expand',
+          onChange: function onChange(item, collapsed) {
+            const data = item.get('model').data;
+            data.collapsed = collapsed;
+            return true;
+          },
+        },
+        'drag-canvas',
+        'zoom-canvas',
+      ],
+    },
+    defaultNode: {
+      size: 26,
+      anchorPoints: [
+        [0, 0.5],
+        [1, 0.5],
+      ],
+      style: {
+        fill: '#C6E5FF',
+        stroke: '#5B8FF9',
+      },
+    },
+    defaultEdge: {
+      type: 'cubic-horizontal',
+      style: {
+        stroke: '#A3B1BF',
+      },
+    },
+    layout: {
+      type: 'mindmap',
+      direction: 'H',
+      getHeight: () => {
+        return 16;
+      },
+      getWidth: () => {
+        return 16;
+      },
+      getVGap: () => {
+        return 8;
+      },
+      getHGap: () => {
+        return 100;
+      },
+    },
+  });
+
+  let centerX = 0;
+  graph.node(function (node) {
+    let position = 'top';
+    if (node.id === 'global') {
+      centerX = node.x;
+    } else {
+      if (node.x > centerX) {
+        position = node.children ? 'left' : 'right';
+      } else {
+        position = node.children ? 'right' : 'left';
+      }
+    }
+
+    return {
+      label: node.name,
+      labelCfg: {
+        position,
+        offset: 5,
+      },
+    };
+  });
+
+  G6.Util.traverseTree(data, item => {
+    item.collapsed = item.id.split('.').length > 1;    
+  })
+  
+  graph.data(data);
+  graph.render();
+  graph.fitView();
+  </script>
+</body>
+</html>
