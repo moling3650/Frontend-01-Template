@@ -60,6 +60,7 @@
           'SyntaxError',
           'TypeError',
           'Uint8Array',
+          'Uint8ClampedArray',
           'Uint16Array',
           'Uint32Array',
           'URIError',
@@ -91,17 +92,12 @@
       visited.add(target);
       const objectPropNames = ownPropertyNamesFor(target).filter(name => isObject(ownPropertyFor(target, name)));
       return objectPropNames.map((name) => {
-        const item = {
-          id: `${prefix}.${name}`,
+        const id = `${prefix}.${name}`
+        return {
+          id,
           name,
+          children: getObjectProperties(ownPropertyFor(target, name), id, visited)
         };
-
-        const children = getObjectProperties(ownPropertyFor(target, name), item.id, visited);
-        if (children && children.length) {
-          item.children = children;
-        }
-
-        return item;
       });
     }
   </script>
@@ -174,9 +170,9 @@
       centerX = node.x;
     } else {
       if (node.x > centerX) {
-        position = node.children ? 'left' : 'right';
+        position = (node.children && node.children.length) ? 'left' : 'right';
       } else {
-        position = node.children ? 'right' : 'left';
+        position = (node.children && node.children.length) ? 'right' : 'left';
       }
     }
 
