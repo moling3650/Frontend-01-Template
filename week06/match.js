@@ -3,17 +3,17 @@
  * @return {object}
  */
 function buildNextMap(pattern) {
-  const next = {}
+  const nextMap = {}
   let idx = 0 // 自相似子串的尾指针
   for (let i = 1; i < pattern.length; i++) {
     if (pattern[i] === pattern[idx]) {
       idx++
     } else if (idx > 0) {
-      next[`match_${pattern.slice(0, i + 1)}`] = `match_${pattern.slice(0, idx + 1)}`
+      nextMap[`match_${pattern.slice(0, i + 1)}`] = `match_${pattern.slice(0, idx + 1)}`
       idx = (pattern[i] === pattern[0]) ? 1 : 0
     }
   }
-  return next
+  return nextMap
 }
 
 /**
@@ -21,7 +21,7 @@ function buildNextMap(pattern) {
  * @return {object}
  */
 function buildStatus(pattern) {
-  // 匹配失败的next表
+  // 匹配失败的next字典
   const nextMap = buildNextMap(pattern);
   const initKey = `match_${pattern[0]}`
   const status = {
@@ -41,13 +41,13 @@ function buildStatus(pattern) {
     const key = `match_${pattern.slice(0, i + 1)}`
     const nextKey = `match_${pattern.slice(0, i + 2)}`
 
-    status[key] = function (c) {
-      if (c === pattern[i]) {
+    status[key] = function (char) {
+      if (char === pattern[i]) {
         return (key === nextKey) ? 'end' : nextKey
       } else if (nextMap[key]) {
-        return status[nextMap[key]](c)
+        return status[nextMap[key]](char)
       } else {
-        return status[initKey](c)
+        return status[initKey](char)
       }
     }
   }
