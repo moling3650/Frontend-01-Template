@@ -1,6 +1,6 @@
 /**
  * @param {string} pattern
- * @return {Array}
+ * @return {object}
  */
 function buildNextMap(pattern) {
   const next = {}
