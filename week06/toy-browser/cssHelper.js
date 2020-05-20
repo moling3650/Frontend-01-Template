@@ -32,37 +32,63 @@ function matchCombinators(element, selector) {
 
 // 检查一个元素和一个CSS规则是否匹配
 function matchRule(element, rule) {
-  const selectorParts = rule.selectors[0].split(' ').reverse()
-  if (matchCombinators(element, selectorParts[0])) {
-    selectorParts.shift()
-    element = element.parent
-  } else {
-    return false
-  }
+  const selectorParts = rule.selectors[0].split(/\s+/g).reverse()
+  let isCurrentElement = true
   while (selectorParts.length && element) {
     if (matchCombinators(element, selectorParts[0])) {
       selectorParts.shift()
+    } else if (isCurrentElement) {
+      return false
     }
+    isCurrentElement = false
     element = element.parent
   }
-  return selectorParts.length === 0
+  return !selectorParts.length
 }
 
+// 获取一个规则的优先级
+function getSpecificity(rule) {
+  const specificity = [0, 0, 0, 0];
+  rule.split(/\s+/g).forEach(selector => {
+    selector.split(/(?=[.#])/).forEach(part => {
+      if (part.startsWith('#')) {
+        specificity[1] += 1
+      } else if (part.startsWith('.')) {
+        specificity[2] += 1
+      } else {
+        specificity[3] += 1
+      }
+    })
+  })
+  return specificity;
+}
+
+// 优先级比较
+function compare(sp1, sp2) {
+  const index = sp1.findIndex((num, idx) => num !== sp2[idx])
+  return index < 0 ? 0 : (sp1[index] - sp2[index])
+}
+
+
 // 计算一个元素的CSS
-function computeCss(element) {
-  element.computedStyle = element.computedStyle || {}
-  for (const rule of rules) {
-    if (matchRule(element, rule)) {
-      rule.declarations.forEach(d => {
-        element.computedStyle[d.property] = d.value
-      });
-    }
-  }
-  return element
+function computeCss(el) {
+  el.computedStyle = el.computedStyle || {}
+  rules.filter(rule => matchRule(el, rule)).forEach(rule => {
+    const specificity = getSpecificity(rule.selectors[0]);
+    rule.declarations.forEach(({ property, value }) => {
+      if (!el.computedStyle[property] || compare(specificity, el.computedStyle[property].specificity) >= 0) {
+        el.computedStyle[property] = {
+          value,
+          specificity
+        }
+      }
+    })
+  })
+
+  return el
 }
 
 module.exports = {
-  rules,
   addCssRules,
   computeCss,
 }
