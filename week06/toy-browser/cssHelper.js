@@ -56,7 +56,11 @@ function matchRule(element, rule) {
   let isCurrentElement = true
   while (selectorParts.length && element) {
     if (matchCombinators(element, selectorParts[0])) {
-      selectorParts.shift()
+      const selector = selectorParts.shift()
+      // 在子选择器需要做特殊处理，一旦匹配要上移N个（父元素的个数）
+      for (let i = 1; i < selector.split('>').length; i++) {
+        element = element.parent
+      }
     } else if (isCurrentElement) {
       return false
     }
