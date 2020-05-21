@@ -23,6 +23,7 @@ function emit(token) {
         if (node.type === 'element') {
           node.next = element
           element.prev = node
+          break
         }
       }
     }
