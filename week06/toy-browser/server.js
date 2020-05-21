@@ -8,18 +8,22 @@ const server = http.createServer((req, res) => {
 `<html maaa=a >
 <head>
   <style>
-    body div #myid.img.icon {
-      width:100px;
+    body img+img {
+      height: 200px;
+      background-color: #ff1111;
+    }
+    body div.container > #myid.img.icon {
+      width: 200px;
       background-color: #ff5000;
     }
-    body div img {
-      width:30px;
-      background-color: #ff1111;
+    div > img {
+      width: 100px;
+      height: 100px;
     }
   </style>
 </head>
 <body>
-  <div>
+  <div class="container">
     <img id="myid" class="img icon"/>
     <img />
   </div>
