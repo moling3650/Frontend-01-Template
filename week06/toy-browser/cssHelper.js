@@ -10,7 +10,7 @@ function addCssRules(text) {
 }
 
 // 检查一个元素和简单选择器是否匹配
-function matchSimpleSelectors(element, selector) {
+function matchSimpleSelector(element, selector) {
   if (!element.attributes && !selector) {
     return false
   }
@@ -25,14 +25,34 @@ function matchSimpleSelectors(element, selector) {
   }
 }
 
-// 检查一个元素和组合选择器是否匹配
-function matchCombinators(element, selector) {
-  return selector.split(/(?=[.#])/).every(s => matchSimpleSelectors(element, s))
+// 检查一个元素和组合简单选择器是否匹配
+function matchSimpleSelectors(element, selector) {
+  return !!element && selector.split(/(?=[.#])/).every(s => matchSimpleSelector(element, s))
+}
+
+// 检查一个元素和复杂选择器（支持>和+）是否匹配
+function matchCombinators(element, rule) {
+  const selectors = rule.split(/(?<=[+>])/g)
+  // 收集要检查的元素和规则
+  const checkList = []
+  while (selectors.length) {
+    let selector = selectors.pop()
+    if (selector.endsWith('>')) {
+      element = element && element.parent
+      selector = selector.slice(0, selector.length - 1)
+    } else if (selector.endsWith('+')) {
+      element = element && element.prev
+      selector = selector.slice(0, selector.length - 1)
+    }
+    checkList.unshift({ element, selector })
+  }
+  return checkList.every(({ element, selector }) => matchSimpleSelectors(element, selector))
 }
 
 // 检查一个元素和一个CSS规则是否匹配
 function matchRule(element, rule) {
-  const selectorParts = rule.selectors[0].split(/\s+/g).reverse()
+  // 去除选择器+和>前后的空格再做拆分
+  const selectorParts = rule.selectors[0].replace(/\s+(?=[+>])|(?<=[+>])\s+/g, '').split(/\s+/g).reverse()
   let isCurrentElement = true
   while (selectorParts.length && element) {
     if (matchCombinators(element, selectorParts[0])) {
@@ -49,7 +69,7 @@ function matchRule(element, rule) {
 // 获取一个规则的优先级
 function getSpecificity(rule) {
   const specificity = [0, 0, 0, 0];
-  rule.split(/\s+/g).forEach(selector => {
+  rule.replace(/[+>]/g, ' ').split(/\s+/g).forEach(selector => {
     selector.split(/(?=[.#])/).forEach(part => {
       if (part.startsWith('#')) {
         specificity[1] += 1

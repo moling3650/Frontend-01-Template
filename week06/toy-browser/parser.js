@@ -16,6 +16,16 @@ function emit(token) {
       attributes: Object.keys(token).filter(k => !/^t(ype|agName)$/.test(k)).map(k => ({ name: k, value: token[k] })),
       children: []
     }
+    if (top.children.length) {
+      // 建立兄弟关系
+      for (let i = top.children.length - 1; i >= 0; i--) {
+        const node = top.children[i];
+        if (node.type === 'element') {
+          node.next = element
+          element.prev = node
+        }
+      }
+    }
     element = cssHelper.computeCss(element)
     top.children.push(element)
     stack.push(element)
@@ -193,13 +203,13 @@ function attributeValueUnquotedState(c) {
 }
 
 function selfClosingStartTagState(c) {
- if (c === '>') {
-   currnetToken.isSelfClosing = true
-   emit(currnetToken)
-   return dataState
- } else {
-   return beforeAttributeNameState(c)
- }
+  if (c === '>') {
+    currnetToken.isSelfClosing = true
+    emit(currnetToken)
+    return dataState
+  } else {
+    return beforeAttributeNameState(c)
+  }
 }
 
 function parseHTML(html) {
