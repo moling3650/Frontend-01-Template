@@ -11,7 +11,7 @@ function addCssRules(text) {
 
 // 检查一个元素和简单选择器是否匹配
 function matchSimpleSelector(element, selector) {
-  if (!element.attributes && !selector) {
+  if (!(element && element.attributes && selector)) {
     return false
   }
   if (selector.startsWith('#')) {
