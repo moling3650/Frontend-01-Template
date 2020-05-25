@@ -14,7 +14,9 @@ function matchSimpleSelector(element, selector) {
   if (!(element && element.attributes && selector)) {
     return false
   }
-  if (selector.startsWith('#')) {
+  if (selector.match(/^:not\((.+?)\)$/)) {
+    return !matchSimpleSelector(element, RegExp.$1)
+  } else if (selector.startsWith('#')) {
     const attrId = element.attributes.find(a => a.name === 'id')
     return !!attrId && attrId.value === selector.slice(1)
   } else if (selector.startsWith('.')) {
@@ -27,7 +29,7 @@ function matchSimpleSelector(element, selector) {
 
 // 检查一个元素和组合简单选择器是否匹配
 function matchSimpleSelectors(element, selector) {
-  return !!element && selector.split(/(?=[.#])/).every(s => matchSimpleSelector(element, s))
+  return !!element && selector.split(/(?<=[\w\])])(?=[\[#.:])/).every(s => matchSimpleSelector(element, s))
 }
 
 // 检查一个元素和复杂选择器（支持>和+）是否匹配
@@ -74,7 +76,7 @@ function matchRule(element, rule) {
 function getSpecificity(rule) {
   const specificity = [0, 0, 0, 0];
   rule.replace(/[+>]/g, ' ').split(/\s+/g).forEach(selector => {
-    selector.split(/(?=[.#])/).forEach(part => {
+    selector.split(/(?<=[\w\])])(?=[\[#.:])/).forEach(part => {
       if (part.startsWith('#')) {
         specificity[1] += 1
       } else if (part.startsWith('.')) {
