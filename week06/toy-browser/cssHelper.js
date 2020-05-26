@@ -61,7 +61,7 @@ function matchBySimpleSelectorSequence(element, simpleSelectorSequence) {
     return false
   }
   // `a#id.link[src^="https"]:not([src$='.pdf'])` -> ["a", "#id", ".link", "[src^="https"]", ":not([src$='.pdf'])"]
-  const simpleSelectors = simpleSelectorSequence.split(/(?<=[\w\]])(?=[#.:\[])/)
+  const simpleSelectors = simpleSelectorSequence.split(/(?<=[\w\]\)])(?=[#.:\[])/)
   return simpleSelectors.every(simpleSelector => matchBySimpleSelector(element, simpleSelector))
 }
 
