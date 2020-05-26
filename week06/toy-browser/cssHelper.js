@@ -2,6 +2,13 @@ const css = require('css')
 
 const rules = []
 
+// 获取一个style标签里的所有规则
+function addCssRules(text) {
+  const ast = css.parse(text);
+  rules.push(...ast.stylesheet.rules)
+  return rules
+}
+
 // 属性值比较函数
 const attrValueCompareFuns = {
   '=': (attrValue, value) => attrValue === value,
@@ -11,14 +18,6 @@ const attrValueCompareFuns = {
   '$=': (attrValue, value) => attrValue.endsWith(value),
   '*=': (attrValue, value) => attrValue.includes(value),
 }
-
-// 获取一个style标签里的所有规则
-function addCssRules(text) {
-  const ast = css.parse(text);
-  rules.push(...ast.stylesheet.rules)
-  return rules
-}
-
 // 检查一个元素和简单选择器是否匹配
 function matchBySimpleSelector(element, selector) {
   if (!element && !selector) {
@@ -39,15 +38,15 @@ function matchBySimpleSelector(element, selector) {
     }
     const name = match[1]
     const comparator = match[2] // 比较符： = ~= |= ^= $= *=
-    const value = match[3] && match[3].replace(/["']/g, '')
-    const attr = element.attributes.find(a => a.name === name)
-    if (!attr) {
+    const value = match[3] && match[3].replace(/["']/g, '') // 去除Value的引号
+    const attr = element.attributes.find(a => a.name === name) // 属性名比较
+    if (!attr) { 
       return false
     }
-    if (!comparator) { // 没有比较符号就没有属性值的比较
+    if (!comparator) { // 没有比较符就没有属性值的比较
       return true
     }
-    return attrValueCompareFuns[comparator](attr.value, value)
+    return attrValueCompareFuns[comparator](attr.value, value) // 属性值比较
   } else if (selector.match(/^:not\((.+)\)$/)) {  // negation
     return !matchBySimpleSelectorSequence(element, RegExp.$1)
   } else {  // type_selector
@@ -133,7 +132,6 @@ function compare(sp1, sp2) {
   const index = sp1.findIndex((num, idx) => num !== sp2[idx])
   return index < 0 ? 0 : (sp1[index] - sp2[index])
 }
-
 
 // 计算一个元素的CSS
 function computeCss(el) {
