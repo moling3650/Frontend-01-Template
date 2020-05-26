@@ -2,6 +2,16 @@ const css = require('css')
 
 const rules = []
 
+// 属性值比较函数
+const attrValueCompareFuns = {
+  '=': (attrValue, value) => attrValue === value,
+  '~=': (attrValue, value) => attrValue.split(/\s+/g).includes(value),
+  '|=': (attrValue, value) => attrValue === value || attrValue.startsWith(`${value}-`),
+  '^=': (attrValue, value) => attrValue.startsWith(value),
+  '$=': (attrValue, value) => attrValue.endsWith(value),
+  '*=': (attrValue, value) => attrValue.includes(value),
+}
+
 // 获取一个style标签里的所有规则
 function addCssRules(text) {
   const ast = css.parse(text);
@@ -23,10 +33,23 @@ function matchBySimpleSelector(element, selector) {
     const attrClass = element.attributes.find(a => a.name === 'class')
     return !!attrClass && attrClass.value.split(/\s+/g).includes(selector.slice(1))
   } else if (selector.match(/^\[(.+?)\]$/)) {  // attrib
-    // TODO
-    return false
+    const match = /([\w-]+)\s*(?:([~|^$*]?=)\s*(\S+))?/.exec(RegExp.$1)
+    if (!match) {
+      return false
+    }
+    const name = match[1]
+    const comparator = match[2] // 比较符： = ~= |= ^= $= *=
+    const value = match[3] && match[3].replace(/["']/g, '')
+    const attr = element.attributes.find(a => a.name === name)
+    if (!attr) {
+      return false
+    }
+    if (!comparator) { // 没有比较符号就没有属性值的比较
+      return true
+    }
+    return attrValueCompareFuns[comparator](attr.value, value)
   } else if (selector.match(/^:not\((.+)\)$/)) {  // negation
-    return !matchBySimpleSelector(element, RegExp.$1)
+    return !matchBySimpleSelectorSequence(element, RegExp.$1)
   } else {  // type_selector
     return element.tagName === selector
   }
@@ -79,7 +102,7 @@ function findMatchedElement(element, selector) {
 
 // 检查一个元素和一个CSS规则是否匹配
 function matchByCssRule(element, rule) {
-  // 'body  #form > .form-title  ~ label +  [type]' -> ["body ", "#form>", ".form-title~", "label+", "[type]"]
+  // 'body  #form > .form-title  ~ label +  [role]' -> ["body ", "#form>", ".form-title~", "label+", "[role]"]
   const selectors = rule.selectors[0].trim().replace(/(?<=[~+>])\s+/g, '').replace(/\s+(?=[ ~+>])/g, '').split(/(?<=[ ~+>])/g)
   while (element && selectors.length) {
     element = findMatchedElement(element, selectors.pop())
