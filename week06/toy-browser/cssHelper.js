@@ -10,73 +10,89 @@ function addCssRules(text) {
 }
 
 // 检查一个元素和简单选择器是否匹配
-function matchSimpleSelector(element, selector) {
-  if (!(element && element.attributes && selector)) {
+function matchBySimpleSelector(element, selector) {
+  if (!element && !selector) {
     return false
   }
-  if (selector.match(/^:not\((.+?)\)$/)) {
-    return !matchSimpleSelector(element, RegExp.$1)
-  } else if (selector.startsWith('#')) {
+  element.attributes = element.attributes || []
+
+  if (selector.startsWith('#')) {  // HASH
     const attrId = element.attributes.find(a => a.name === 'id')
     return !!attrId && attrId.value === selector.slice(1)
-  } else if (selector.startsWith('.')) {
+  } else if (selector.startsWith('.')) {  // class
     const attrClass = element.attributes.find(a => a.name === 'class')
-    return !!attrClass && attrClass.value.split(/\s+/g).indexOf(selector.slice(1)) !== -1
-  } else {
+    return !!attrClass && attrClass.value.split(/\s+/g).includes(selector.slice(1))
+  } else if (selector.match(/^\[(.+?)\]$/)) {  // attrib
+    // TODO
+    return false
+  } else if (selector.match(/^:not\((.+)\)$/)) {  // negation
+    return !matchBySimpleSelector(element, RegExp.$1)
+  } else {  // type_selector
     return element.tagName === selector
   }
 }
 
-// 检查一个元素和组合简单选择器是否匹配
-function matchSimpleSelectors(element, selector) {
-  return !!element && selector.split(/(?<=[\w\])])(?=[\[#.:])/).every(s => matchSimpleSelector(element, s))
+// 检查一个元素和简单选择器序列是否全匹配
+function matchBySimpleSelectorSequence(element, simpleSelectorSequence) {
+  if (!element || !simpleSelectorSequence) {
+    return false
+  }
+  // `a#id.link[src^="https"]:not([src$='.pdf'])` -> ["a", "#id", ".link", "[src^="https"]", ":not([src$='.pdf'])"]
+  const simpleSelectors = simpleSelectorSequence.split(/(?<=[\w\]])(?=[#.:\[])/)
+  return simpleSelectors.every(simpleSelector => matchBySimpleSelector(element, simpleSelector))
 }
 
-// 检查一个元素和复杂选择器（支持>和+）是否匹配
-function matchCombinators(element, rule) {
-  const selectors = rule.split(/(?<=[+>])/g)
-  // 收集要检查的元素和规则
-  const checkList = []
-  while (selectors.length) {
-    let selector = selectors.pop()
-    if (selector.endsWith('>')) {
-      element = element && element.parent
-      selector = selector.slice(0, selector.length - 1)
-    } else if (selector.endsWith('+')) {
-      element = element && element.prev
-      selector = selector.slice(0, selector.length - 1)
-    }
-    checkList.unshift({ element, selector })
+// 查找一个与选择器匹配的element
+function findMatchedElement(element, selector) {
+  if (!element || !selector) {
+    return false
   }
-  return checkList.every(({ element, selector }) => matchSimpleSelectors(element, selector))
+
+  if (selector.endsWith(' ')) {  // Descendant combinator
+    selector = selector.replace(' ', '')
+    do {
+      element = element.parent
+    } while (element && !matchBySimpleSelectorSequence(element, selector))
+  } else if (selector.endsWith('>')) {  // Child combinator
+    selector = selector.replace('>', '')
+    element = element.parent
+    if (!matchBySimpleSelectorSequence(element, selector)) {
+      element = null
+    }
+  } else if (selector.endsWith('+')) {  // Next-sibling combinator
+    selector = selector.replace('+', '')
+    element = element.prev
+    if (!matchBySimpleSelectorSequence(element, selector)) {
+      element = null
+    }
+  } else if (selector.endsWith('~')) {  // Subsequent-sibling combinator
+    selector = selector.replace('~', '')
+    do {
+      element = element.prev
+    } while (element && !matchBySimpleSelectorSequence(element, selector))
+  } else if (!matchBySimpleSelectorSequence(element, selector)) { // Current element
+    element = null
+  }
+
+  return element || null
 }
 
 // 检查一个元素和一个CSS规则是否匹配
-function matchRule(element, rule) {
-  // 去除选择器+和>前后的空格再做拆分
-  const selectorParts = rule.selectors[0].replace(/\s+(?=[+>])|(?<=[+>])\s+/g, '').split(/\s+/g).reverse()
-  let isCurrentElement = true
-  while (selectorParts.length && element) {
-    if (matchCombinators(element, selectorParts[0])) {
-      const selector = selectorParts.shift()
-      // 在子选择器需要做特殊处理，一旦匹配要上移N个（父元素的个数）
-      for (let i = 1; i < selector.split('>').length; i++) {
-        element = element.parent
-      }
-    } else if (isCurrentElement) {
-      return false
-    }
-    isCurrentElement = false
-    element = element.parent
+function matchByCssRule(element, rule) {
+  // 'body  #form > .form-title  ~ label +  [type]' -> ["body ", "#form>", ".form-title~", "label+", "[type]"]
+  const selectors = rule.selectors[0].trim().replace(/(?<=[~+>])\s+/g, '').replace(/\s+(?=[ ~+>])/g, '').split(/(?<=[ ~+>])/g)
+  while (element && selectors.length) {
+    element = findMatchedElement(element, selectors.pop())
   }
-  return !selectorParts.length
+
+  return !!element
 }
 
 // 获取一个规则的优先级
 function getSpecificity(rule) {
-  const specificity = [0, 0, 0, 0];
+  const specificity = [0, 0, 0, 0]
   rule.replace(/[+>]/g, ' ').split(/\s+/g).forEach(selector => {
-    selector.split(/(?<=[\w\])])(?=[\[#.:])/).forEach(part => {
+    selector.split(/(?<=\w)(?=[#.:])/).forEach(part => {
       if (part.startsWith('#')) {
         specificity[1] += 1
       } else if (part.startsWith('.')) {
@@ -86,7 +102,7 @@ function getSpecificity(rule) {
       }
     })
   })
-  return specificity;
+  return specificity
 }
 
 // 优先级比较
@@ -99,7 +115,7 @@ function compare(sp1, sp2) {
 // 计算一个元素的CSS
 function computeCss(el) {
   el.computedStyle = el.computedStyle || {}
-  rules.filter(rule => matchRule(el, rule)).forEach(rule => {
+  rules.filter(rule => matchByCssRule(el, rule)).forEach(rule => {
     const specificity = getSpecificity(rule.selectors[0]);
     rule.declarations.forEach(({ property, value }) => {
       if (!el.computedStyle[property] || compare(specificity, el.computedStyle[property].specificity) >= 0) {
