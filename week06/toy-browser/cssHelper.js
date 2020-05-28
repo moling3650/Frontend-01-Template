@@ -139,6 +139,7 @@ function computeCss(el) {
   rules.filter(rule => matchByCssRule(el, rule)).forEach(rule => {
     const specificity = getSpecificity(rule.selectors[0]);
     rule.declarations.forEach(({ property, value }) => {
+      property = property.replace(/-([a-z])/g, (_, char) => char.toUpperCase()) // 转驼峰命名：'flex-direction' -> 'flexDirection'
       if (!el.computedStyle[property] || compare(specificity, el.computedStyle[property].specificity) >= 0) {
         el.computedStyle[property] = {
           value,
