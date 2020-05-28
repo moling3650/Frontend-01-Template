@@ -1,0 +1,18 @@
+{
+  "name": "toy-browser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "node server.js",
+    "start": "node client.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "css": "^2.2.4",
+    "images": "^3.0.2"
+  }
+}
