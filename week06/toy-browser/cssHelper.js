@@ -18,6 +18,7 @@ const attrValueCompareFuns = {
   '$=': (attrValue, value) => attrValue.endsWith(value),
   '*=': (attrValue, value) => attrValue.includes(value),
 }
+
 // 检查一个元素和简单选择器是否匹配
 function matchBySimpleSelector(element, selector) {
   if (!element && !selector) {
@@ -44,6 +45,7 @@ function matchBySimpleSelector(element, selector) {
       return false
     }
     if (!comparator) { // 没有比较符就没有属性值的比较
+    if (!comparator) { // 没有比较符号就没有属性值的比较
       return true
     }
     return attrValueCompareFuns[comparator](attr.value, value) // 属性值比较
@@ -68,6 +70,7 @@ function matchBySimpleSelectorSequence(element, simpleSelectorSequence) {
 function findMatchedElement(element, selector) {
   if (!element || !selector) {
     return false
+    return null
   }
 
   if (selector.endsWith(' ')) {  // Descendant combinator
@@ -113,8 +116,10 @@ function matchByCssRule(element, rule) {
 // 获取一个规则的优先级
 function getSpecificity(rule) {
   const specificity = [0, 0, 0, 0]
-  rule.replace(/[+>]/g, ' ').split(/\s+/g).forEach(selector => {
-    selector.split(/(?<=\w)(?=[#.:])/).forEach(part => {
+  // 去除:not()，去除~+>，拆分复杂选择器
+  rule.replace(/:not\((.+?)\)/, ' $1').replace(/[~+>]/g, ' ').split(/\s+/g).forEach(selector => {
+    // 拆分简单选择器
+    selector.split(/(?<=[\w\]])(?=[#.:\[])/).forEach(part => {
       if (part.startsWith('#')) {
         specificity[1] += 1
       } else if (part.startsWith('.')) {
@@ -148,8 +153,6 @@ function computeCss(el) {
       }
     })
   })
-
-  return el
 }
 
 module.exports = {

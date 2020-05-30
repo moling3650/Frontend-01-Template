@@ -39,15 +39,15 @@ function matchBySimpleSelector(element, selector) {
     }
     const name = match[1]
     const comparator = match[2] // 比较符： = ~= |= ^= $= *=
-    const value = match[3] && match[3].replace(/["']/g, '')
-    const attr = element.attributes.find(a => a.name === name)
+    const value = match[3] && match[3].replace(/["']/g, '') // 去除Value的引号
+    const attr = element.attributes.find(a => a.name === name) // 属性名比较
     if (!attr) {
       return false
     }
     if (!comparator) { // 没有比较符号就没有属性值的比较
       return true
     }
-    return attrValueCompareFuns[comparator](attr.value, value)
+    return attrValueCompareFuns[comparator](attr.value, value) // 属性值比较
   } else if (selector.match(/^:not\((.+)\)$/)) {  // negation
     return !matchBySimpleSelectorSequence(element, RegExp.$1)
   } else {  // type_selector
@@ -61,7 +61,7 @@ function matchBySimpleSelectorSequence(element, simpleSelectorSequence) {
     return false
   }
   // `a#id.link[src^="https"]:not([src$='.pdf'])` -> ["a", "#id", ".link", "[src^="https"]", ":not([src$='.pdf'])"]
-  const simpleSelectors = simpleSelectorSequence.split(/(?<=[\w\]])(?=[#.:\[])/)
+  const simpleSelectors = simpleSelectorSequence.split(/(?<=[\w\]\)])(?=[#.:\[])/)
   return simpleSelectors.every(simpleSelector => matchBySimpleSelector(element, simpleSelector))
 }
 
@@ -114,7 +114,9 @@ function matchByCssRule(element, rule) {
 // 获取一个规则的优先级
 function getSpecificity(rule) {
   const specificity = [0, 0, 0, 0]
-  rule.replace(/:not\((.+?)\)/, '$1').replace(/[~+>]/g, ' ').split(/\s+/g).forEach(selector => {
+  // 去除:not()，去除~+>，拆分复杂选择器
+  rule.replace(/:not\((.+?)\)/, ' $1').replace(/[~+>]/g, ' ').split(/\s+/g).forEach(selector => {
+    // 拆分简单选择器
     selector.split(/(?<=[\w\]])(?=[#.:\[])/).forEach(part => {
       if (part.startsWith('#')) {
         specificity[1] += 1
@@ -133,7 +135,6 @@ function compare(sp1, sp2) {
   const index = sp1.findIndex((num, idx) => num !== sp2[idx])
   return index < 0 ? 0 : (sp1[index] - sp2[index])
 }
-
 
 // 计算一个元素的CSS
 function computeCss(el) {
