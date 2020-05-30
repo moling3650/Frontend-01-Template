@@ -28,7 +28,7 @@ function emit(token) {
         }
       }
     }
-    element = cssHelper.computeCss(element)
+    cssHelper.computeCss(element)
     top.children.push(element)
     stack.push(element)
     if (token.isSelfClosing) {

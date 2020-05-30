@@ -114,8 +114,8 @@ function matchByCssRule(element, rule) {
 // 获取一个规则的优先级
 function getSpecificity(rule) {
   const specificity = [0, 0, 0, 0]
-  rule.replace(/[+>]/g, ' ').split(/\s+/g).forEach(selector => {
-    selector.split(/(?<=\w)(?=[#.:])/).forEach(part => {
+  rule.replace(/:not\((.+?)\)/, '$1').replace(/[~+>]/g, ' ').split(/\s+/g).forEach(selector => {
+    selector.split(/(?<=[\w\]])(?=[#.:\[])/).forEach(part => {
       if (part.startsWith('#')) {
         specificity[1] += 1
       } else if (part.startsWith('.')) {
@@ -150,8 +150,6 @@ function computeCss(el) {
       }
     })
   })
-
-  return el
 }
 
 module.exports = {

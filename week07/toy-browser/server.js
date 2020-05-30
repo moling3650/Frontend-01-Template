@@ -11,9 +11,9 @@ const server = http.createServer((req, res) => {
   <style>
     .container {
       display: flex;
+      width: 450px;
       flex-direction: row;
       flex-wrap: wrap;
-      width: 400px;
       background-color: #eee;
     }
 
