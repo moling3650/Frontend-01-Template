@@ -77,7 +77,7 @@ function getFlexLayoutParams(style) {
 // 元素分行
 function getFlexLines(element, mainSize, crossSize) {
   const items = element.children.filter(e => e.type === 'element')
-                                .sort((a, b) => ((a.style.order || 0) - (b.style.order || 0)))
+    .sort((a, b) => ((a.style.order || 0) - (b.style.order || 0)))
   const isWrap = element.style.flexWrap !== 'nowrap'
   const lineMainSize = element.style[mainSize]
 
@@ -130,10 +130,10 @@ function layout(element) {
   // 计算主轴
   if (element.style[mainSize] === null) {
     element.style[mainSize] = element.children.filter(e => e.type === 'element')
-                                              .map(item => item.style[mainSize] || 0)
-                                              .reduce((total, s) => total + s, 0)
+      .map(item => item.style[mainSize] || 0)
+      .reduce((total, s) => total + s, 0)
   }
-  const mainBase = mainSign > 0 ? 0 :element.style[mainSize]
+  const mainBase = mainSign > 0 ? 0 : element.style[mainSize]
 
   const flexLines = getFlexLines(element, mainSize, crossSize)
 
@@ -180,7 +180,9 @@ function layout(element) {
   const freeCrossSize = element.style[crossSize] - usedCrossSize
   let currentCrossStart = crossBase
   let gutter = 0
-  if (element.style.alignContent === 'flex-end') {
+  if (element.style.alignContent === 'stretch') {
+    flexLines.forEach(line => line.crossSize += freeCrossSize / flexLines.length)
+  } else if (element.style.alignContent === 'flex-end') {
     currentCrossStart = crossBase + freeCrossSize * crossSign
   } else if (element.style.alignContent === 'center') {
     currentCrossStart = crossBase + freeCrossSize / 2 * crossSign
