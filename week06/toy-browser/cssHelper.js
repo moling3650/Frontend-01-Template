@@ -41,10 +41,9 @@ function matchBySimpleSelector(element, selector) {
     const comparator = match[2] // 比较符： = ~= |= ^= $= *=
     const value = match[3] && match[3].replace(/["']/g, '') // 去除Value的引号
     const attr = element.attributes.find(a => a.name === name) // 属性名比较
-    if (!attr) { 
+    if (!attr) {
       return false
     }
-    if (!comparator) { // 没有比较符就没有属性值的比较
     if (!comparator) { // 没有比较符号就没有属性值的比较
       return true
     }
@@ -69,7 +68,6 @@ function matchBySimpleSelectorSequence(element, simpleSelectorSequence) {
 // 查找一个与选择器匹配的element
 function findMatchedElement(element, selector) {
   if (!element || !selector) {
-    return false
     return null
   }
 
