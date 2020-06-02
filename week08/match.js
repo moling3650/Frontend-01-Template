@@ -56,3 +56,13 @@ function matchBySimpleSelector(selector, element) {
     return matchByTypeSelector(selector, element)
   }
 }
+
+// 检查一个元素和简单选择器序列是否全匹配
+function matchBySimpleSelectorSequence(simpleSelectorSequence, element) {
+  if (!simpleSelectorSequence || !element) {
+    return false
+  }
+  // `a#id.link[src^="https"]` -> ["a", "#id", ".link", "[src^="https"]"]
+  const simpleSelectors = simpleSelectorSequence.split(/(?<=[\w\]])(?=[#.\[])/)
+  return simpleSelectors.every(simpleSelector => matchBySimpleSelector(simpleSelector, element))
+}
