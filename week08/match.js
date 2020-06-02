@@ -10,8 +10,19 @@ function matchByIdSelector(selector, element) {
   return element.id === selector.replace('#', '')
 }
 
+// 属性值比较函数
+const attrValueCompareFuns = {
+  '=': (attrValue, value) => attrValue === value,
+  '~=': (attrValue, value) => attrValue.split(/\s+/g).includes(value),
+  '|=': (attrValue, value) => attrValue === value || attrValue.startsWith(`${value}-`),
+  '^=': (attrValue, value) => attrValue.startsWith(value),
+  '$=': (attrValue, value) => attrValue.endsWith(value),
+  '*=': (attrValue, value) => attrValue.includes(value),
+}
+
 function matchByAttributeSelector(selector, element) {
-  const match = /^\[\s*([\w-]+)\s*(?:(=)\s*(\S+))?\s*\]$/.exec(selector)
+  //                     key         comparetor    value
+  const match = /^\[\s*([\w-]+)\s*(?:([~|^$*]?=)\s*(\S+))?\s*\]$/.exec(selector)
   if (!match) {
     return false
   }
@@ -28,7 +39,7 @@ function matchByAttributeSelector(selector, element) {
   }
   // 属性值比较
   const value = match[3].replace(/["']/g, '') // 去除value的引号
-  return attrValue === value
+  return attrValueCompareFuns[comparator](attrValue, value)
 }
 
 // 检查一个元素和简单选择器是否匹配
