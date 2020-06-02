@@ -52,7 +52,9 @@ function matchBySimpleSelector(selector, element) {
     return matchByClassSelector(selector, element)
   } else if (selector.match(/^\[(.+?)\]$/)) { // attrib
     return matchByAttributeSelector(selector, element)
-  } else { // type_selector
+  } else if (selector.match(/^:not\((.+)\)$/)) { // negation
+    return !matchBySimpleSelectorSequence(element, RegExp.$1)
+  } else { // type_selector  
     return matchByTypeSelector(selector, element)
   }
 }
@@ -62,7 +64,7 @@ function matchBySimpleSelectorSequence(simpleSelectorSequence, element) {
   if (!simpleSelectorSequence || !element) {
     return false
   }
-  // `a#id.link[src^="https"]` -> ["a", "#id", ".link", "[src^="https"]"]
-  const simpleSelectors = simpleSelectorSequence.split(/(?<=[\w\]])(?=[#.\[])/)
+  // `a#id.link[src^="https"]:not([targer='_blank'])` -> ["a", "#id", ".link", "[src^="https"]", ":not([targer='_blank'])"]
+  const simpleSelectors = simpleSelectorSequence.split(/(?<=[\w\]\)])(?=[#.:\[])/)
   return simpleSelectors.every(simpleSelector => matchBySimpleSelector(simpleSelector, element))
 }
