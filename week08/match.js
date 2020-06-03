@@ -68,3 +68,40 @@ function matchBySimpleSelectorSequence(simpleSelectorSequence, element) {
   const simpleSelectors = simpleSelectorSequence.split(/(?<=[\w\]\)])(?=[#.:\[])/)
   return simpleSelectors.every(simpleSelector => matchBySimpleSelector(simpleSelector, element))
 }
+
+// 获取下一个待考查的元素
+function getNextElementKey(combinator) {
+  return {
+    '>': 'parentElement',
+    '+': 'previousElementSibling',
+  }[combinator]
+}
+
+// 查找一个与选择器匹配的element
+function findMatchedElement(selector, element) {
+  if (!selector || !element) {
+    return null
+  }
+  const combinator = /[>+]$/.test(selector) ? selector[selector.length - 1] : ''
+  const nextElementKey = getNextElementKey(combinator)
+
+  if (/[>+]$/.test(selector)) {  // Child combinator OR Next-sibling combinator
+    selector = selector.replace(/[>+]$/, '')
+    element = element[nextElementKey]
+    if (!matchBySimpleSelectorSequence(selector, element)) {
+      element = null
+    }
+  } else if (!matchBySimpleSelectorSequence(selector, element)) { // 唯一没有combinator的当前元素
+    element = null
+  }
+  return element || null
+}
+
+// 检查一个元素和一个选择器是否匹配
+function match(selector, element) {
+  const selectors = rule.trim().replace(/(?<=[+>])\s+/g, '').replace(/\s+(?=[+>])/g, '').split(/(?<=[+>])/g)
+  while (element && selectorParts.length) {
+    element = findMatchedElement(selectorParts.pop(), element)
+  }
+  return !!element
+}
