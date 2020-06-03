@@ -80,21 +80,19 @@ function getNextElementKey(combinator) {
 }
 
 // 查找一个与选择器匹配的element
-function findMatchedElement(selector, element) {
-  if (!selector || !element) {
+function findMatchedElement(selectorPart, element) {
+  if (!selectorPart || !element) {
     return null
   }
-  const combinator = /[>+ ~]$/.test(selector) ? selector[selector.length - 1] : ''
+  const [selector, combinator] = selectorPart.split(/(?<=[ ~+>])/)
   const nextElementKey = getNextElementKey(combinator)
 
-  if (/[>+]$/.test(selector)) {  // Child combinator OR Next-sibling combinator
-    selector = selector.replace(/[>+]$/, '')
+  if (/^[>+]$/.test(combinator)) {  // Child combinator OR Next-sibling combinator
     element = element[nextElementKey]
     if (!matchBySimpleSelectorSequence(selector, element)) {
       element = null
     }
-  } else if (/[ ~]$/.test(selector)) {  // Descendant combinator OR Subsequent-sibling combinator
-    selector = selector.replace(/[ ~]$/, '')
+  } else if (/^[ ~]$/.test(combinator)) {  // Descendant combinator OR Subsequent-sibling combinator
     do {
       element = element[nextElementKey]
     } while (element && !matchBySimpleSelectorSequence(selector, element))
