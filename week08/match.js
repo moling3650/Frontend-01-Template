@@ -53,7 +53,7 @@ function matchBySimpleSelector(selector, element) {
   } else if (selector.match(/^\[(.+?)\]$/)) { // attrib
     return matchByAttributeSelector(selector, element)
   } else if (selector.match(/^:not\((.+)\)$/)) { // negation
-    return !matchBySimpleSelectorSequence(element, RegExp.$1)
+    return !matchBySimpleSelectorSequence(RegExp.$1, element)
   } else { // type_selector  
     return matchByTypeSelector(selector, element)
   }
@@ -65,7 +65,7 @@ function matchBySimpleSelectorSequence(simpleSelectorSequence, element) {
     return false
   }
   // `a#id.link[src^="https"]:not([targer='_blank'])` -> ["a", "#id", ".link", "[src^="https"]", ":not([targer='_blank'])"]
-  const simpleSelectors = simpleSelectorSequence.split(/(?<=[\w\]\)])(?=[#.:\[])/)
+  const simpleSelectors = simpleSelectorSequence.replace(/(:.+\)|[#.\[])/g, '\0$1').split('\0')
   return simpleSelectors.every(simpleSelector => matchBySimpleSelector(simpleSelector, element))
 }
 
@@ -103,9 +103,9 @@ function findMatchedElement(selectorPart, element) {
 }
 
 // 检查一个元素和一个选择器是否匹配
-function match(selector, element) {
+function match(rule, element) {
   // 'body  #form > .form-title  ~ label +  [role]' -> ["body ", "#form>", ".form-title~", "label+", "[role]"]
-  const selectors = rule.trim().replace(/(?<=[~+>])\s+/g, '').replace(/\s+(?=[ ~+>])/g, '').split(/(?<=[ ~+>])/g)
+  const selectorParts = rule.trim().replace(/(?<=[~+>])\s+/g, '').replace(/\s+(?=[ ~+>])/g, '').split(/(?<=[ ~+>])/g)
   while (element && selectorParts.length) {
     element = findMatchedElement(selectorParts.pop(), element)
   }
