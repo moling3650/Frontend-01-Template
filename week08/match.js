@@ -28,9 +28,8 @@ function matchByAttributeSelector(selector, element) {
   }
   // 属性名比较
   const name = match[1]
-  const attrValue = element.getAttribute(name)
-  if (attrValue === null) {
-    return false
+  if (!element.hasAttribute(name)) { //dom有可能有属性而没有值，这种情况getAttribute(name)为''不为null
+    return false; 
   }
   // 没有比较符号就没有属性值的比较
   const comparator = match[2]
