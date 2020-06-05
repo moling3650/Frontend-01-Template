@@ -53,7 +53,8 @@ function matchBySimpleSelector(selector, element) {
   } else if (selector.match(/^\[(.+?)\]$/)) { // attrib
     return matchByAttributeSelector(selector, element)
   } else if (selector.match(/^:not\((.+)\)$/)) { // negation
-    return !matchBySimpleSelectorSequence(RegExp.$1, element)
+    selector = RegExp.$1.replace(/:not\(.*?\)/g, '') // 忽略:not()内的:not选择器
+    return !matchBySimpleSelectorSequence(selector, element)
   } else { // type_selector  
     return matchByTypeSelector(selector, element)
   }
