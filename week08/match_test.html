@@ -30,21 +30,27 @@
       <div></div>
       <div></div>
     </div>
+    <div>
       <div>
-        <div>
-          <a class="link" href="http://www.1234.com"></a>
-        </div>
-        <div>
-          <a id="w1234" href="https://www.1234.com.cn"></a>
-        </div>
+        <a class="link" href="http://www.1234.com"></a>
       </div>
+      <div>
+        <a id="w1234" href="https://www.1234.com.cn"></a>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
   </div>
   <script src="./match.js"></script>
   <script>
     const selectors = [
       'body div.aaa span',
       'body > div div > span',
-      'html body .aaa > div + div.bbb ~ div',
+      'body div div.aaa > div + div.bbb ~ div',
       'body div div + div ~ div > div div + div',
       'body  div  .bbb + .ccc ~ .ddd',
       'body div:not(.ddd)',
