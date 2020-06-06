@@ -1,0 +1,61 @@
+<html>
+
+<head>
+  <style>
+    div {
+      border: 1px solid #000;
+    }
+
+    .container>div div {
+      display: inline-block;
+      width: 25px;
+      height: 25px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="aaa">
+      <div>
+        <span></span>
+      </div>
+      <div class="bbb"></div>
+      <div class="ccc"></div>
+      <div class="ccc"></div>
+      <div></div>
+      <div class="ddd"></div>
+    </div>
+    <div>
+      <div></div>
+      <div></div>
+    </div>
+      <div>
+        <div>
+          <a class="link" href="http://www.1234.com"></a>
+        </div>
+        <div>
+          <a id="w1234" href="https://www.1234.com.cn"></a>
+        </div>
+      </div>
+  </div>
+  <script src="./match.js"></script>
+  <script>
+    const selectors = [
+      'body div.aaa span',
+      'body > div div > span',
+      'html body .aaa > div + div.bbb ~ div',
+      'body div div + div ~ div > div div + div',
+      'body  div  .bbb + .ccc ~ .ddd',
+      'body div:not(.ddd)',
+      'a.link[href$="com"]',
+      'body div.aaa + div ~ div a#w1234[href^=https]:not(.link)',
+    ]
+
+    selectors.forEach(selector => {
+      console.log([`Test: "${selector}"`, `Result: ${match(selector, document.querySelector(selector))}`].join('\n'))
+    })
+  </script>
+</body>
+
+</html>
