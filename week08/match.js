@@ -75,10 +75,12 @@ function findMatchedElement(selectorPart, element) {
   if (!selectorPart || !element) {
     return null
   }
-  const [selector, combinator] = selectorPart.split(/(?=[~+>]$)/)
+  const [selector, combinator] = selectorPart.split(/(?=[ ~+>]$)/)
   const nextElementKey = {
     '>': 'parentElement',
+    ' ': 'parentElement',
     '+': 'previousElementSibling',
+    '~': 'previousElementSibling',
   }[combinator]
 
   if (/^[>+]$/.test(combinator)) {  // Child combinator OR Next-sibling combinator
@@ -86,10 +88,16 @@ function findMatchedElement(selectorPart, element) {
     if (!matchBySimpleSelectorSequence(selector, element)) {
       element = null
     }
-  } else if (combinator === '~') {  // Subsequent-sibling combinator
-    do {
-      element = element.previousElementSibling
-    } while (element && !findMatchedElementByComplexSelector(selector, element))
+  } else if (/^[ ~]$/.test(combinator)) {  // Descendant combinator OR Subsequent-sibling combinator
+    while (element) {
+      const matchedElement = findMatchedElementByComplexSelector(selector, element)
+      if (matchedElement) {
+        element = matchedElement
+        break
+      } else {
+        element = element[nextElementKey]
+      }
+    }
   } else if (!matchBySimpleSelectorSequence(selector, element)) { // 唯一没有combinator的当前元素
     element = null
   }
@@ -101,8 +109,9 @@ function findMatchedElementByComplexSelector(selector, element) {
   if (!selector || !element) {
     return null
   }
-  // '#form > .form-title  ~ label +  [role]' -> ["#form>", ".form-title~", "label+", "[role]"]
-  const selectorParts = selector.replace(/([^~]+~|[^+>]+?[+>])/g, '$1\0').split('\0')
+  // 拆分组合器，~组合器会和+组合器合并，因为~组合器和+组合器会存在回溯的问题
+  // '.a+.b~.c>.d~.e+.f>.g' -> [".a+.b~", ".c>", ".d~", ".e+", ".f>", ".g"]
+  const selectorParts = selector.replace(/([^~>]+~(?!=)|[^+>]+?[+>])/g, '$1\0').split('\0')
   while (element && selectorParts.length) {
     element = findMatchedElement(selectorParts.pop(), element)
   }
@@ -113,25 +122,16 @@ function match(rule, element) {
   if (!rule || !element) {
     return null
   }
-
-  // 'body  #form > .form-title'-> ["body ", "#form>.form-title"]
+  // 拆分后代组合器，因为后代组合器和>~+组合器会存在回溯的问题
+  // '.a .b~.c>.d .e+.f .g' -> [".a ", ".b~.c>.d ", ".e+.f ", ".g"]
   const selectorParts = rule.trim().replace(/\s*([~+ >])\s*/g, '$1').split(/(?<= )/g)
-  let currentElement = element
-  while (currentElement && selectorParts.length) {
-    const [selector, combinator] = selectorParts.pop().split(/(?= )/)
-    if (combinator) { // Descendant combinator 
-      while (currentElement) {
-        const matchedElement = findMatchedElementByComplexSelector(selector, currentElement)
-        if (matchedElement) {
-          currentElement = matchedElement
-          break
-        } else {
-          currentElement = currentElement.parentElement
-        }
-      }
+  while (element && selectorParts.length) {
+    const selector = selectorParts.pop()
+    if (selector.endsWith(' ')) { // Descendant combinator 
+      element = findMatchedElement(selector, element)
     } else {
-      currentElement = findMatchedElementByComplexSelector(selector, currentElement)
+      element = findMatchedElementByComplexSelector(selector, element)
     }
   }
-  return !!currentElement
+  return !!element
 }
