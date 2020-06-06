@@ -66,18 +66,8 @@ function matchBySimpleSelectorSequence(simpleSelectorSequence, element) {
     return false
   }
   // `a#id.link[src^="https"]:not([targer='_blank'])` -> ["a", "#id", ".link", "[src^="https"]", ":not([targer='_blank'])"]
-  const simpleSelectors = simpleSelectorSequence.replace(/(:.+\)|[#.\[])/g, '\0$1').split('\0')
+  const simpleSelectors = simpleSelectorSequence.split(/(?<!\([^\)]*)(?=[#\.\[:])/g)
   return simpleSelectors.every(simpleSelector => matchBySimpleSelector(simpleSelector, element))
-}
-
-// 获取下一个待考查的元素
-function getNextElementKey(combinator) {
-  return {
-    '>': 'parentElement',
-    ' ': 'parentElement',
-    '+': 'previousElementSibling',
-    '~': 'previousElementSibling',
-  }[combinator]
 }
 
 // 查找一个与选择器匹配的element
@@ -85,17 +75,20 @@ function findMatchedElement(selectorPart, element) {
   if (!selectorPart || !element) {
     return null
   }
-  const [selector, combinator] = selectorPart.split(/(?<=[ ~+>])/)
-  const nextElementKey = getNextElementKey(combinator)
+  const [selector, combinator] = selectorPart.split(/(?=[~+>])/)
+  const nextElementKey = {
+    '>': 'parentElement',
+    '+': 'previousElementSibling',
+  }[combinator]
 
   if (/^[>+]$/.test(combinator)) {  // Child combinator OR Next-sibling combinator
     element = element[nextElementKey]
     if (!matchBySimpleSelectorSequence(selector, element)) {
       element = null
     }
-  } else if (/^[ ~]$/.test(combinator)) {  // Descendant combinator OR Subsequent-sibling combinator
+  } else if (combinator === '~') {  // Subsequent-sibling combinator
     do {
-      element = element[nextElementKey]
+      element = element.previousElementSibling
     } while (element && !matchBySimpleSelectorSequence(selector, element))
   } else if (!matchBySimpleSelectorSequence(selector, element)) { // 唯一没有combinator的当前元素
     element = null
@@ -103,12 +96,42 @@ function findMatchedElement(selectorPart, element) {
   return element || null
 }
 
-// 检查一个元素和一个选择器是否匹配
-function match(rule, element) {
-  // 'body  #form > .form-title  ~ label +  [role]' -> ["body ", "#form>", ".form-title~", "label+", "[role]"]
-  const selectorParts = rule.trim().replace(/(?<=[~+>])\s+/g, '').replace(/\s+(?=[ ~+>])/g, '').split(/(?<=[ ~+>])/g)
+// 查找一个与复杂选择器匹配的element，只包含>、+、~组合器
+function findMatchedElementByComplexSelector(selector, element) {
+  if (!selector || !element) {
+    return null
+  }
+  // '#form > .form-title  ~ label +  [role]' -> ["#form>", ".form-title~", "label+", "[role]"]
+  const selectorParts = selector.trim().replace(/\s*([~+>])\s*/g, '$1').split(/(?<=[~+>])/g)
   while (element && selectorParts.length) {
     element = findMatchedElement(selectorParts.pop(), element)
   }
-  return !!element
+  return element
+}
+
+function match(rule, element) {
+  if (!rule || !element) {
+    return null
+  }
+
+  // 'body  #form > .form-title'-> ["body ", "#form>.form-title"]
+  const selectorParts = rule.trim().replace(/\s*([~+ >])\s*/g, '$1').split(/(?<= )/g)
+  let currentElement = element
+  while (currentElement && selectorParts.length) {
+    const [selector, combinator] = selectorParts.pop().split(/(?= )/)
+    if (combinator) { // Descendant combinator 
+      while (currentElement) {
+        const matchedElement = findMatchedElementByComplexSelector(selector, currentElement)
+        if (matchedElement) {
+          currentElement = matchedElement
+          break
+        } else {
+          currentElement = currentElement.parentElement
+        }
+      }
+    } else {
+      currentElement = findMatchedElementByComplexSelector(selector, currentElement)
+    }
+  }
+  return !!currentElement
 }
