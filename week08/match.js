@@ -75,7 +75,7 @@ function findMatchedElement(selectorPart, element) {
   if (!selectorPart || !element) {
     return null
   }
-  const [selector, combinator] = selectorPart.split(/(?=[~+>])/)
+  const [selector, combinator] = selectorPart.split(/(?=[~+>]$)/)
   const nextElementKey = {
     '>': 'parentElement',
     '+': 'previousElementSibling',
@@ -89,7 +89,7 @@ function findMatchedElement(selectorPart, element) {
   } else if (combinator === '~') {  // Subsequent-sibling combinator
     do {
       element = element.previousElementSibling
-    } while (element && !matchBySimpleSelectorSequence(selector, element))
+    } while (element && !findMatchedElementByComplexSelector(selector, element))
   } else if (!matchBySimpleSelectorSequence(selector, element)) { // 唯一没有combinator的当前元素
     element = null
   }
@@ -102,7 +102,7 @@ function findMatchedElementByComplexSelector(selector, element) {
     return null
   }
   // '#form > .form-title  ~ label +  [role]' -> ["#form>", ".form-title~", "label+", "[role]"]
-  const selectorParts = selector.trim().replace(/\s*([~+>])\s*/g, '$1').split(/(?<=[~+>])/g)
+  const selectorParts = selector.replace(/([^~]+~|[^+>]+?[+>])/g, '$1\0').split('\0')
   while (element && selectorParts.length) {
     element = findMatchedElement(selectorParts.pop(), element)
   }
