@@ -59,7 +59,12 @@
     ]
 
     selectors.forEach(selector => {
-      console.log([`Test: "${selector}"`, `Result: ${match(selector, document.querySelector(selector))}`].join('\n'))
+      const elements = [...document.querySelectorAll(selector)]
+      console.log([
+        `Selector: "${selector}"`,
+        `Elements: ${elements.length}`,
+        `Result: ${elements.every(el => match(selector, el))}`
+      ].join('\n'))
     })
   </script>
 </body>
