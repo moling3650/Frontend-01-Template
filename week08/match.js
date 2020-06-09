@@ -90,12 +90,11 @@ function findMatchedElement(selectorPart, element) {
     }
   } else if (/^[ ~]$/.test(combinator)) {  // Descendant combinator OR Subsequent-sibling combinator
     while (element) {
+      element = element[nextElementKey]
       const matchedElement = findMatchedElementByComplexSelector(selector, element)
       if (matchedElement) {
         element = matchedElement
         break
-      } else {
-        element = element[nextElementKey]
       }
     }
   } else if (!matchBySimpleSelectorSequence(selector, element)) { // 唯一没有combinator的当前元素
