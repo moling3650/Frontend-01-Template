@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      #container {
+        line-height: 0;
+      }
+
+      .cell {
+        display: inline-block;
+
+        font-size: 0;
+        vertical-align: top;
+        background-color: #ccc;
+      }
+    </style>
+  <title>MapSearch</title>
+</head>
+<body>
+  <div id="container"></div>
+  <button id="clear">clear</button>
+  <button id="save">save</button>
+
+  <script src="./js/Board.js"></script>
+  <script src="./js/MapUI.js"></script>
+  <script>
+    const mapData = localStorage.getItem('map')
+    const board = new Board(10, JSON.parse(mapData))
+    const ui = new MapUI(board, '#container', { cellSize: 30 })
+
+    document.getElementById('clear').addEventListener('click', () => ui.clear())
+    document.getElementById('save').addEventListener('click', () => ui.save())
+  </script>
+</body>
+</html>
