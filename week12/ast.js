@@ -78,7 +78,7 @@ function createAST(tokens) {
 
 function calcul(ast) {
   if (ast.value !== void(0)) {
-    return ast.value
+    return +ast.value
   }
   const [value1, value2] = ast.children.map(c => calcul(c))
 
