@@ -61,57 +61,44 @@ function buildNext(pattern) {
   return next
 }
 
-function findMatchedIndex(pattern, text) {
-  const re = new RegExp(pattern.replace(/\?/g, '.'))
-  const match = re.exec(text)
+/**
+ * @param {string} s
+ * @param {string} p
+ * @param {object} options
+ * @return {number}
+ */
+function findMatchedLastIndex(s, p, options) {
+  const pattern = p.replace(/[*?]/g, char => char === '*' ? '' : '.')
+  const re = new RegExp(`${options.isFirst && !options.hasStar ? '^' : ''}${pattern}${options.isLast ? '$' : ''}`)
+  const match = re.exec(s)
   return match ? match.index : -1
 }
 
 /**
- * @param {string} pattern
- * @param {string} text
+ * @param {string} s
+ * @param {string} p
  * @return {boolean}
  */
-function match(pattern, text) {
-  let ti = 0
-  // 把模式串按*切成片段
-  const re = /(?:^|\*)[^*]*/g
-  let _match = null
-  while (_match = re.exec(pattern)) {
-    let subPattern = _match[0]
-    let pi = 0
-    // 处理模式串片段的前置的*和?
-    while (pi < subPattern.length && /^[*?]$/.test(subPattern[pi])) {
-      if (subPattern[pi] === '?') {
-        ti++
-      }
-      pi++
-    }
-
-    subPattern = subPattern.slice(pi)
-    const matchedIndex = findMatchedIndex(subPattern, text.slice(ti))
-    if (matchedIndex === -1) {
+const isMatch = function (s, p) {
+  if (p === '') {
+    return s === ''
+  }
+  const re = /(?:^\*?|\*)[^*]*/g
+  let match = null
+  let index = 0
+  while (match = re.exec(p)) {
+    const subPattern = match[0]
+    const hasStar = subPattern.startsWith('*')
+    const lastIndex = findMatchedLastIndex(s.slice(index), subPattern, {
+      isFirst: match.index === 0,
+      isLast: re.lastIndex === p.length,
+      hasStar
+    })
+    if (lastIndex !== -1) {
+      index += lastIndex + subPattern.length - (hasStar ? 1 : 0)
+    } else {
       return false
-    }
-    ti += matchedIndex + subPattern.length
-
-    if (re.lastIndex === pattern.length) {
-      // 最后一个模式串片段
     }
   }
   return true
 }
-
-//                                       012345678901?3
-// console.log(JSON.stringify(buildNext('01234017890123')))
-// console.log(JSON.stringify(buildNext('01234017890103')))
-// console.log(JSON.stringify(buildNext('012340178901x3')))
-
-// 012340178901?3
-// 0123401789012x
-//           012340178901?3
-// 0123401789010x
-//             012340178901?3
-// 0123401789011x
-//              012340178901?3
-
