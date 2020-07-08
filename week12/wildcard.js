@@ -4,7 +4,7 @@
  * @param {object} options
  * @return {number}
  */
-function findMatchedLastIndex(s, p, options) {
+function findMatchedIndex(s, p, options) {
   const pattern = p.replace(/\?/g, '.');
   const re = new RegExp(`${options.isFirst && !options.hasStar ? '^' : ''}${pattern}${options.isLast ? '$' : ''}`);
   const match = re.exec(s);
@@ -22,16 +22,16 @@ const isMatch = function (s, p) {
   }
   const re = /(?:^\*?|\*)[^*]*/g;
   let match = null;
-  let index = 0;
+  let lastIndex = 0;
   while (match = re.exec(p)) {
     const subPattern = match[0].replace('*', '');
-    const lastIndex = findMatchedLastIndex(s.slice(index), subPattern, {
+    const matchedIndex = findMatchedIndex(s.slice(lastIndex), subPattern, {
       isFirst: match.index === 0,
       isLast: re.lastIndex === p.length,
       hasStar: match[0].startsWith('*'),
     });
-    if (lastIndex !== -1) {
-      index += lastIndex + subPattern.length;
+    if (matchedIndex !== -1) {
+      lastIndex += matchedIndex + subPattern.length;
     } else {
       return false;
     }
