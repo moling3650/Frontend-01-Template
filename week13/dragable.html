@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Range Api Demo</title>
+</head>
+<style>
+  #container {
+    user-select: none;
+  }
+
+  #dragable {
+    width: 100px;
+    height: 100px;
+    background-color: pink;
+    display: inline-block;
+  }
+</style>
+
+<body>
+  <div id="container">
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  </div>
+  <div id="dragable"></div>
+  <script>
+    let dragable = document.getElementById('dragable')
+
+    let baseX = 0
+    let baseY = 0
+
+    dragable.addEventListener('mousedown', event => {
+      let startX = event.clientX
+      startY = event.clientY
+
+      let move = (event) => {
+        let range = nearest(event.clientX, event.clientY)
+        range.insertNode(dragable)
+      }
+      let up = (event) => {
+        baseX = baseX + event.clientX - startX
+        baseY = baseY + event.clientY - startY
+
+        document.removeEventListener('mousemove', move)
+        document.removeEventListener('mouseup', up)
+      }
+
+      document.addEventListener('mousemove', move)
+
+      document.addEventListener('mouseup', up)
+    })
+
+    let ranges = []
+    let container = document.getElementById('container')
+    let textNode = container.childNodes[0]
+    let textLength = textNode.textContent.length
+    for (let i = 0; i < textLength; i++) {
+      let range = document.createRange()
+      range.setStart(textNode, i)
+      range.setEnd(textNode, i)
+      ranges.push(range)
+    }
+
+    function nearest(x0, y0) {
+      let nearestRange = null
+      let distance = Infinity
+      for (let range of ranges) {
+        let { x, y } = range.getBoundingClientRect()
+        let d = (x0 - x) ** 2 + (y0 - y) ** 2
+
+        if (d < distance) {
+          nearestRange = range
+          distance = d
+        }
+      }
+      return nearestRange
+    }
+  </script>
+</body>
+
+</html>
