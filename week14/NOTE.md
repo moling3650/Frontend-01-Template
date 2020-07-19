@@ -1,1 +1,26 @@
-# 每周总结可以写在这里
+### Carousel组件
+
+#### Properties
+- data
+
+#### Methods
+
+
+#### Attribute
+- style
+
+#### State
+- position
+
+#### Event
+- dragstart
+- mousedown
+- mousemove
+- mouseup
+
+#### Lifecycle
+- mountTo
+- render
+
+#### Children
+- images
