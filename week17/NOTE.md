@@ -14,17 +14,17 @@
 # 工具链
 
 1. 初始化
-  - yeoman
-  - create-react-app
-  - vue-cli
+   - yeoman
+   - create-react-app
+   - vue-cli
 2. 开发、调试
-  - dev-tool/chrome
-  - webpack-dev-server
-  - mock
-  - wireshark
-  - charles
+   - dev-tool/chrome
+   - webpack-dev-server
+   - mock
+   - wireshark
+   - charles
 3. 测试
-  - mocha
-  - ject
+   - mocha
+   - ject
 4. 发布
-  - lint
+   - lint
