@@ -25,6 +25,6 @@
    - charles
 3. 测试
    - mocha
-   - ject
+   - jest
 4. 发布
    - lint
