@@ -1,0 +1,14 @@
+{
+  "name": "toy-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "mocha --require @babel/register",
+    "coverage": "nyc mocha",
+    "start": "webpack-dev-server",
+    "build": "webpack"
+  },
+  "author": "moling3650",
+  "license": "MIT"
+}
